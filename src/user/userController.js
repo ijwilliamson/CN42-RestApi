@@ -1,8 +1,29 @@
 const User = require("./userModel");
+const Food = require("../food/foodModel");
 
 exports.createUser = async(request, response) => {
     try {
-        const newUser = await User.create(request.body);
+        const newUser = await User.create(request.body,
+            );
+        
+        if (request.body.food.length>0){
+
+            for (const food of request.body.food){
+                 //get food id or insert new food
+        
+                 let foodId =  await Food.Food.findOne({where: {name: food.name}});
+                
+                 if (!foodId)
+                 {
+                    const newFood =  await Food.Food.create({name: food.name});
+                     foodId = newFood.id;
+                 }
+                 
+                 //Add the food to the user
+                 newUser.addFood(foodId);
+            }
+        }
+
         response.status(201).send({ user: newUser.username });
         
     } catch (error) {
@@ -11,14 +32,31 @@ exports.createUser = async(request, response) => {
     }
 }
 
+
+
 exports.readUsers = async(request, response) => {
     // TODO: only available to administrator
     // readUsers must not return the passwordHash
     // use attributes in the sequelize method to specify fields
     try {
+
+
+        // Query including associated many to many relationship
+        // include runs a eager load of the Food items associated
+        // through specifies the through table, here, attributes
+        // as an empty array specifies no fields from the through
+        // table
+
+        //an alternative is User.findAll({ include: {all: true}});
+
         let users = await User.findAll({
-            attributes: ['id', 'username', 'email']
-        });
+        attributes: ['id', 'username', 'email'],
+        include: {
+            model: Food.Food,
+            attributes: ['id', 'name'],
+            through: {
+                attributes: []
+            }}});
         
         response.status(200).send({users: users});
         console.log(users);
@@ -37,8 +75,16 @@ exports.readOneUser = async(request, response) => {
 
     try {
         const user = await User.findByPk(
-            request.params.id,{
-            attributes:['id', 'username', 'email']});
+            request.params.id,
+            {
+                attributes: ['id', 'username', 'email'],
+                include: {
+                    model: Food.Food,
+                    attributes: ['id', 'name'],
+                    through: {
+                        attributes: []
+                    }}
+        });
         response.status(200).send({user: user});
         console.log(user);
 

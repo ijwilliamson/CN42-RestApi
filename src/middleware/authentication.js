@@ -20,6 +20,7 @@ exports.hashPass = async (request, response, next) =>{
             );
             return;
         }
+        
         // Hash the password and save back to request body
         request.body.passwordHash = await bcrypt.hash(
             request.body.password, 10);
@@ -108,7 +109,8 @@ exports.validateToken = async(request, response, next) =>{
                 });
                 return;
             }
-
+        
+        
         const token = request.header("Authorization")
                         .replace("Bearer ", "");
 
@@ -118,7 +120,7 @@ exports.validateToken = async(request, response, next) =>{
 
 
         //Check if the token has expired
-        const timeout = 120 //life of token in seconds 
+        const timeout = 3600 //life of token in seconds 
         
         if (isTokenExpired(
                 new Date(decodedToken.issued),
