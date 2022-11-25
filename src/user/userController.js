@@ -1,12 +1,22 @@
 const User = require("./userModel");
 const Food = require("../food/foodModel");
+const jwt = require('jsonwebtoken');
 
 exports.createUser = async(request, response) => {
     try {
-        const newUser = await User.create(request.body,
-            );
-        
-        if (request.body.food.length>0){
+        const newUser = await User.create({
+            username: request.body.username,
+            passwordHash: request.body.passwordHash,
+            email: request.body.email},
+            {fields: ['id', 'username', 'email'],
+        include: {
+            model: Food.Food,
+            attributes: ['id', 'name'],
+            through: {
+                attributes: []
+            }}});
+        if(request.body.food){
+            if (request.body.food.length>0){
 
             for (const food of request.body.food){
                  //get food id or insert new food
@@ -15,7 +25,7 @@ exports.createUser = async(request, response) => {
                 
                  if (!foodId)
                  {
-                    const newFood =  await Food.Food.create({name: food.name});
+                    const newFood =  await Food.Food.create({name: food.name.toLowerCase()});
                      foodId = newFood.id;
                  }
                  
@@ -23,8 +33,21 @@ exports.createUser = async(request, response) => {
                  newUser.addFood(foodId);
             }
         }
+        }
+        
+            //a new token is issued
+        //token is issued with the id and username
+        //as well as issue date so that it can become
+        //invalid at after a specified time.
+        request.token = await jwt.sign(
+            {
+                id: newUser.id,
+                username: newUser.username,
+                issued: new Date()
+            },
+             process.env.SECRET);
 
-        response.status(201).send({ user: newUser.username });
+        response.status(201).send({ user: newUser , token: request.token});
         
     } catch (error) {
         console.log(error);
@@ -57,6 +80,7 @@ exports.readUsers = async(request, response) => {
             through: {
                 attributes: []
             }}});
+
         
         response.status(200).send({users: users});
         console.log(users);
@@ -75,7 +99,7 @@ exports.readOneUser = async(request, response) => {
 
     try {
         const user = await User.findByPk(
-            request.params.id,
+            request.user.id,
             {
                 attributes: ['id', 'username', 'email'],
                 include: {
@@ -104,9 +128,11 @@ exports.updateUser = async(request, response) => {
             reduceObject(request.body),
             {where: {id: request.params.id}}
         )
+        
         const user = await User.findByPk(
             request.params.id,{
             attributes:['id', 'username', 'email']});
+
         response.status(200).send({"user": user });   
 
     } catch (error) {
@@ -123,6 +149,43 @@ exports.deleteUser = async(request, response) => {
         await User.destroy({
             where: {id: request.params.id}});
         response.status(200).send({"status": "user deleted"})
+    } catch (error) {
+        console.log(error);
+        response.status(500).send({error: error.message});
+    }
+}
+
+
+exports.deleteFood = async(request, response) => {
+    try {
+        
+        //try to get the user specified
+        const user = await User.findByPk(
+            request.params.id,
+            {
+                attributes: ['id', 'username', 'email'],
+                include: {
+                    model: Food.Food,
+                    attributes: ['id', 'name'],
+                    through: {
+                        attributes: []
+                    }}
+        });
+       
+        if (!user){
+            response.status(401).send({ status: "user not found" });
+            return;
+        }
+        
+        if (!request.params.fid){
+            response.status(401).send({ status: "food not specified" });
+            return;
+        }
+        
+       user.removeFood(request.params.fid);
+
+    response.status(201).send({ user: user });
+
     } catch (error) {
         console.log(error);
         response.status(500).send({error: error.message});

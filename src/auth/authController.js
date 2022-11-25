@@ -1,5 +1,5 @@
 const User = require("../user/userModel");
-
+const Food = require("../food/foodModel")
 exports.loginUser = async (request, response) => {
 
     //note: the only process performed here is the response including
@@ -8,8 +8,15 @@ exports.loginUser = async (request, response) => {
     try {
 
         if(request.body.authenticated){
+            const user = await User.findByPk(
+                request.user.id,
+                {
+                    attributes: ['id', 'username', 'email'],
+                    
+            });
             response.status(200).send({
                 status: "Login sucessful",
+                user: user,
                 token: request.token
             })
         } else {

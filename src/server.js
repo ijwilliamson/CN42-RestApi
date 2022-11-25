@@ -1,6 +1,7 @@
 // require("./db/connection");
 const {sequelize } = require( './db/connection');
 const express = require("express");
+const cors = require("cors");
 const userRouter = require('./user/userRoutes');
 const authRouter = require('./auth/authRoutes');
 const foodRouter = require('./food/foodRoutes');
@@ -15,8 +16,9 @@ const syncTables = async () => {
 syncTables();
 
 const app = express();
-const port = process.env.PORT || 5001;
 
+const port = process.env.PORT || 5001;
+app.use(cors({origin: '*'}));
 app.use(express.json());
 app.use(userRouter);
 app.use(authRouter);

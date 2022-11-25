@@ -59,7 +59,7 @@ exports.checkPass = async (request, response, next) =>{
             //authentication is false
             next(); return;
         }
-
+        
         //conpare password with passwordHash
         //true if matched
         const result = await bcrypt.compare(
@@ -97,6 +97,8 @@ exports.checkPass = async (request, response, next) =>{
             {error: error.message})
     }
 }
+
+
 
 exports.validateToken = async(request, response, next) =>{
     try {
