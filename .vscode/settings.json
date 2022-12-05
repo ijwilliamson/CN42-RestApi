@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/fcd001b4-06f3-4484-b460-e84490d8d073/AppServices/subscriptions/fcd001b4-06f3-4484-b460-e84490d8d073/resourceGroups/CN9Rest/providers/Microsoft.Web/sites/CN9Rest",
+    "appService.deploySubpath": "."
+}

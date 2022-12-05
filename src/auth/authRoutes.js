@@ -1,12 +1,24 @@
-const {Router} = require ('express');
+const { Router } = require("express");
 
-const {loginUser} = require('./authController');
+const { loginUser } = require("./authController");
 
-const {checkPass} = require('../middleware/authentication')
+const { checkPass } = require("../middleware/authentication");
 
 const authRouter = Router();
 
-authRouter.post('/auth', checkPass, loginUser);
+//Routes
+/**
+ * @swagger
+ * /auth:
+ *  post:
+ *      tags:
+ *          -   authentication
+ *      description: Use to authorise user
+ *      responses:
+ *          '200':
+ *              description: A successful response
+ */
+
+authRouter.post("/auth", checkPass, loginUser);
 
 module.exports = authRouter;
-

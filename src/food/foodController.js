@@ -24,7 +24,7 @@ exports.deleteFood = async (request, response) => {
 
 exports.readFoods = async (request, response) => {
     try {
-        let foods = await Food.Food.findAll({});
+        let foods = await Food.Food.findAll({ order: ["name"] });
 
         response.status(200).send({ food: foods });
         console.log(foods);
