@@ -17,7 +17,7 @@ const swaggerOptions = {
             contact: {
                 name: "Ian",
             },
-            servers: ["http://localhost:5000"],
+            servers: ["https://cn42-restapi.onrender.com"],
         },
     },
     // ['.routes/*.js']
